@@ -31,7 +31,7 @@ class Player(Ship):
   def player_shoot(self, click_x, click_y):
     # Calculate relative positions
     shot_x = click_x - (self.x + 125)
-    shot_y = click_y - (self.y + 20)
+    shot_y = click_y - (self.y + 25)
 
     # Calculate the angle in radians
     angle_radians = math.atan2(shot_y, shot_x)
@@ -44,7 +44,7 @@ class Player(Ship):
     vel_y = bullet_speed * math.sin(angle_radians)
     
     # Create a new bullet instance
-    new_bullet = Bullet((self.x+78), (self.y-10), vel_x, vel_y)
+    new_bullet = Bullet((self.x + 125), (self.y + 30), vel_x, vel_y)
     self.bullets.append(new_bullet)  # Add bullet to list
 
   def update_player(self):
@@ -70,8 +70,7 @@ class Bullet:
     self.vx = vx
     self.vy = vy
     self.bullet_image = BULLET_IMAGE
-    if not BULLET_IMAGE:
-      print("Failed to load bullet image")
+    self.angle_degrees = 90 + math.degrees(math.atan2(-vy, vx))
     self.alive = True  # This flag checks if the bullet is still active
 
   def update_bullet(self):
@@ -82,8 +81,10 @@ class Bullet:
         self.alive = False
   
   def draw_bullet(self, window):
-    window.blit(self.bullet_image, (self.x, self.y))
-    self.mask = pg.mask.from_surface(self.bullet_image)
+    self.rotated_image = pg.transform.rotate(self.bullet_image, self.angle_degrees)
+    rect = self.rotated_image.get_rect(center=(self.x, self.y))
+    window.blit(self.rotated_image, rect)
+    self.mask = pg.mask.from_surface(self.rotated_image)
   
     
 class Enemy(Ship):
