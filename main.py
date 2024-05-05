@@ -6,30 +6,21 @@ import os
 import random
 import time
 
-# Initalizes pygame
 pg.font.init()
 pg.init()
 
-# ---------
-# Constants
-# ---------
-WIDTH = 800 # Width of screen
-HEIGHT = 1000 # Height of screen
+WIDTH = 800
+HEIGHT = 1000
 SHIP_LOCATION = 250, 750 # Ship width = 140px Ship height = 160px
 ENEMY_Y_SPAWN = 0
-# Colors
 
-# -----------
 # Image loads
-# -----------
 BG = pg.transform.scale(pg.image.load(os.path.join("Assets", "backgroundSpace.png")), (WIDTH, HEIGHT) )
 PLAYER_SHIP = pg.image.load(os.path.join("Assets", "RocketShip.png"))
 ENEMY_SHIP = pg.image.load(os.path.join("Assets", "EnemyShip.png"))
 BULLET_IMAGE = pg.image.load(os.path.join("Assets", "laser2.png"))
 
-# ------
 # Screen
-# ------
 screen = pg.display.set_mode((WIDTH, HEIGHT))
 pg.display.set_caption("Space Game")
 
@@ -50,7 +41,7 @@ def main():
     clock = pg.time.Clock()
 
     # Updates the window
-    # We have redraw inside the main function so that we can access all the variables without using paramiters.
+    # Redraw inside the main function so that we can access all the variables without using paramiters.
     def redraw_window():
         screen.blit(BG, (0, 0)) # Clears the screen
         # text
@@ -65,28 +56,24 @@ def main():
         pg.display.update() # Makes all of these updates actually happen
 
 
-    # Mainloop
     while run:
-        # Max Fps - Makes it consistent no matter what system you're using
+        # Max Fps - Makes it consistent.
         clock.tick(FPS)
         redraw_window()
         
-        # Breaks out of the while loop if the window gets closed
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 run = False
                 
-        # Let's you control the ship horizontally with a and d
         keys = pg.key.get_pressed()
-        # left
+    
         if keys[pg.K_a] and player.x - player_vel > 0:
             player.x -= player_vel
-        # righta
+            
         if keys[pg.K_d] and player.x + player.ship_img.get_width() + player_vel < WIDTH:
             player.x += player_vel
             
         if event.type == MOUSEBUTTONDOWN and event.button == 1:
-            # Get the mouse position at the time of click
             click_x, click_y = event.pos
             player.player_shoot(click_x, click_y)
         
@@ -94,7 +81,6 @@ def main():
         enemy_manager.update_enemies()
         enemy_manager.check_bullet_hits(player.bullets)
             
-    # Cleans up and uninitiliazes the pygame library and cleans up it's resources
     pg.quit()
     
 

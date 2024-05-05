@@ -18,7 +18,6 @@ class Ship:
     self.ship_img = None
     self.cool_down_counter = 0
   
-  # Drawing ships (takes image and cordinates)
   def draw(self, window):
     window.blit(self.ship_img, (self.x, self.y))
 
@@ -38,34 +37,29 @@ class Player(Ship):
       shot_x = click_x - (self.x + 125)
       shot_y = click_y - (self.y + 25)
 
-      # Calculate the angle in radians
       angle_radians = math.atan2(shot_y, shot_x)
 
-      # Set bullet speed
-      bullet_speed = 4  # You can adjust this speed as needed
-
-      # Calculate velocity components based on the angle
+      bullet_speed = 4 
+      
       vel_x = bullet_speed * math.cos(angle_radians)
       vel_y = bullet_speed * math.sin(angle_radians)
       
       # Create a new bullet instance
       new_bullet = Bullet((self.x + 125), (self.y + 30), vel_x, vel_y)
-      self.bullets.append(new_bullet)  # Add bullet to list
+      self.bullets.append(new_bullet)
       self.last_shot_time = current_time
 
   def update_player(self):
-    # Update all bullets
     new_bullets = []
     for bullet in self.bullets:
       bullet.update_bullet()
       if bullet.alive:
         new_bullets.append(bullet)
-    self.bullets = new_bullets  # Only keep bullets that are still 'alive'
+    self.bullets = new_bullets  # Only keep bullets that are still "alive". (change name?)
   
   def draw_bullets(self, window):
-    # Draw all bullets
     for bullet in self.bullets:
-      bullet.draw_bullet(window)  # Assuming the Bullet class has a draw_bullet method
+      bullet.draw_bullet(window)
 
 
   
@@ -77,7 +71,7 @@ class Bullet:
     self.vy = vy
     self.bullet_image = BULLET_IMAGE
     self.angle_degrees = 90 + math.degrees(math.atan2(-vy, vx))
-    self.alive = True  # This flag checks if the bullet is still active
+    self.alive = True
     
     self.rotated_image = pg.transform.rotate(self.bullet_image, self.angle_degrees)
     self.mask = pg.mask.from_surface(self.rotated_image)
@@ -141,7 +135,6 @@ class EnemyManager:
     for bullet in bullets:
       if bullet.alive:
         for enemy in self.enemies:
-          # Calculate offsets for mask overlap
           offset_x = int((bullet.x + 20 )- (enemy.x))
           offset_y = int((bullet.y + 10) - (enemy.y))
           # Check for collision
@@ -149,4 +142,4 @@ class EnemyManager:
             print("Hit detected!")
             bullets.remove(bullet)
             self.enemies.remove(enemy)
-            break  # Exit the loop as bullet is no longer active
+            break
