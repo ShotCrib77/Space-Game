@@ -1,5 +1,5 @@
 # Modules/Libraries
-from ship import Ship, Player, Enemy, Bullet
+from ship import Ship, Player, Enemy, EnemyManager, Bullet
 import pygame as pg
 from pygame.locals import *
 import os
@@ -25,7 +25,8 @@ ENEMY_Y_SPAWN = 0
 BG = pg.transform.scale(pg.image.load(os.path.join("Assets", "backgroundSpace.png")), (WIDTH, HEIGHT) )
 PLAYER_SHIP = pg.image.load(os.path.join("Assets", "RocketShip.png"))
 ENEMY_SHIP = pg.image.load(os.path.join("Assets", "EnemyShip.png"))
-BULLET_IMAGE = pg.image.load(os.path.join("Assets", "pixel_laser_red.png"))
+BULLET_IMAGE = pg.image.load(os.path.join("Assets", "laser2.png"))
+
 # ------
 # Screen
 # ------
@@ -41,11 +42,12 @@ def main():
     health = 10
     
     player = Player(SHIP_LOCATION[0], SHIP_LOCATION[1])
-    enemy = create_enemy()
+    enemy_manager = EnemyManager(player)
+    enemy_manager.create_enemy()
+    enemy_manager.create_enemy()
     player_vel = 2
 
     clock = pg.time.Clock()
-    
 
     # Updates the window
     # We have redraw inside the main function so that we can access all the variables without using paramiters.
@@ -56,7 +58,7 @@ def main():
         health_label = main_font.render(f"Health: {health}", 1, (255, 0, 0))
         
         player.draw(screen)
-        enemy.draw(screen)
+        enemy_manager.draw_enemies(screen)
         player.draw_bullets(screen)
         player.update_player()
         screen.blit(health_label, (10, 925))  # Draws out the health_label (temporary??)
@@ -79,7 +81,7 @@ def main():
         # left
         if keys[pg.K_a] and player.x - player_vel > 0:
             player.x -= player_vel
-        # right
+        # righta
         if keys[pg.K_d] and player.x + player.ship_img.get_width() + player_vel < WIDTH:
             player.x += player_vel
             
@@ -89,18 +91,11 @@ def main():
             player.player_shoot(click_x, click_y)
         
 
-        enemy.move()
-        
+        enemy_manager.update_enemies()
+        enemy_manager.check_bullet_hits(player.bullets)
             
     # Cleans up and uninitiliazes the pygame library and cleans up it's resources
     pg.quit()
-
-
-def create_enemy():
-    x_spawn = random.randint(100, 600)
-    enemy = Enemy(x_spawn, ENEMY_Y_SPAWN, 1, 1) 
-    return enemy
-    
     
 
 if __name__ == "__main__":
