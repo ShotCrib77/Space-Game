@@ -45,7 +45,7 @@ class Player(Ship):
       vel_y = bullet_speed * math.sin(angle_radians)
       
       # Create a new bullet instance
-      new_bullet = Bullet((self.x + 125), (self.y + 30), vel_x, vel_y)
+      new_bullet = Bullet((self.x + 125), (self.y + 35), vel_x, vel_y)
       self.bullets.append(new_bullet)
       self.last_shot_time = current_time
 
@@ -135,8 +135,8 @@ class EnemyManager:
     for bullet in bullets:
       if bullet.alive:
         for enemy in self.enemies:
-          offset_x = int((bullet.x + 20 )- (enemy.x))
-          offset_y = int((bullet.y + 10) - (enemy.y))
+          offset_x = int((bullet.x)- (enemy.x))
+          offset_y = int((bullet.y) - (enemy.y))
           # Check for collision
           if enemy.mask.overlap(bullet.mask, (offset_x, offset_y)):
             print("Hit detected!")

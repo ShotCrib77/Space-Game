@@ -6,6 +6,7 @@ import os
 import random
 import time
 
+
 pg.font.init()
 pg.init()
 
@@ -34,12 +35,10 @@ def main():
     
     player = Player(SHIP_LOCATION[0], SHIP_LOCATION[1])
     enemy_manager = EnemyManager(player)
-    enemy_manager.create_enemy()
-    enemy_manager.create_enemy()
     player_vel = 2
-
+    enemy_spawn_timer = 5000
     clock = pg.time.Clock()
-
+    last_enemy_time = pg.time.get_ticks()
     # Updates the window
     # Redraw inside the main function so that we can access all the variables without using paramiters.
     def redraw_window():
@@ -59,6 +58,7 @@ def main():
     while run:
         # Max Fps - Makes it consistent.
         clock.tick(FPS)
+        current_time = pg.time.get_ticks()
         redraw_window()
         
         for event in pg.event.get():
@@ -80,6 +80,10 @@ def main():
 
         enemy_manager.update_enemies()
         enemy_manager.check_bullet_hits(player.bullets)
+        
+        if current_time - last_enemy_time >= enemy_spawn_timer:
+            enemy_manager.create_enemy()
+            last_enemy_time = current_time 
             
     pg.quit()
     
