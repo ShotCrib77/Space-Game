@@ -21,10 +21,6 @@ class Ship:
   def draw(self, window):
     window.blit(self.ship_img, (self.x, self.y))
 
-
-import pygame as pg
-import math
-
 class Player(Ship):
   def __init__(self, x, y):
     super().__init__(x, y)
@@ -34,21 +30,21 @@ class Player(Ship):
 
   def player_shoot(self, click_x, click_y):
     # Calculate relative positions
-    shot_x = click_x - self.x
-    shot_y = click_y - self.y
+    shot_x = click_x - (self.x + 125)
+    shot_y = click_y - (self.y + 20)
 
     # Calculate the angle in radians
     angle_radians = math.atan2(shot_y, shot_x)
 
     # Set bullet speed
-    bullet_speed = 2  # You can adjust this speed as needed
+    bullet_speed = 4  # You can adjust this speed as needed
 
     # Calculate velocity components based on the angle
     vel_x = bullet_speed * math.cos(angle_radians)
     vel_y = bullet_speed * math.sin(angle_radians)
     
     # Create a new bullet instance
-    new_bullet = Bullet((self.x+75), self.y, vel_x, vel_y)
+    new_bullet = Bullet((self.x+78), (self.y-10), vel_x, vel_y)
     self.bullets.append(new_bullet)  # Add bullet to list
 
   def update_player(self):
