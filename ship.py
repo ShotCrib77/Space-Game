@@ -11,6 +11,9 @@ BULLET_IMAGE = pg.image.load(os.path.join("Assets", "laser2.png"))
 clock = pg.time.Clock()
 
 FPS = 60
+player : object
+score : int
+
 class Ship:
   def __init__(self, x, y):
     self.x = x
@@ -29,6 +32,7 @@ class Player(Ship):
     self.ship_img = PLAYER_SHIP
     self.mask = pg.mask.from_surface(self.ship_img)
     self.bullets = []
+    self.score = 0
 
   def player_shoot(self, click_x, click_y):
     current_time = pg.time.get_ticks()
@@ -60,6 +64,14 @@ class Player(Ship):
   def draw_bullets(self, window):
     for bullet in self.bullets:
       bullet.draw_bullet(window)
+  
+  def update_score(self):
+    self.score += 1
+  
+  def draw_score(self, window):
+    main_font = pg.font.SysFont("arial", 30)
+    score_label = main_font.render(f"Score: {self.score}", 1, (255, 0, 0))
+    window.blit(score_label, (10, 925))
 
 
   
@@ -137,9 +149,9 @@ class EnemyManager:
         for enemy in self.enemies:
           offset_x = int((bullet.x)- (enemy.x))
           offset_y = int((bullet.y) - (enemy.y))
-          # Check for collision
+          # Checks for collision
           if enemy.mask.overlap(bullet.mask, (offset_x, offset_y)):
-            print("Hit detected!")
             bullets.remove(bullet)
             self.enemies.remove(enemy)
+            self.player.update_score()
             break

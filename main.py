@@ -31,7 +31,8 @@ def main():
     # ---------
     FPS = 60
     run = True
-    health = 10
+    global score
+    score = 0
     
     player = Player(SHIP_LOCATION[0], SHIP_LOCATION[1])
     enemy_manager = EnemyManager(player)
@@ -43,16 +44,13 @@ def main():
     # Redraw inside the main function so that we can access all the variables without using paramiters.
     def redraw_window():
         screen.blit(BG, (0, 0)) # Clears the screen
-        # text
-        main_font = pg.font.SysFont("comicsans", 30)
-        health_label = main_font.render(f"Health: {health}", 1, (255, 0, 0))
-        
+        main_font = pg.font.SysFont("arial", 30)
+        player.draw_score(screen)
         player.draw(screen)
         enemy_manager.draw_enemies(screen)
         player.draw_bullets(screen)
         player.update_player()
-        screen.blit(health_label, (10, 925))  # Draws out the health_label (temporary??)
-        pg.display.update() # Makes all of these updates actually happen
+        pg.display.update() # Makes all of these updates actually happen.
 
 
     while run:
