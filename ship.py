@@ -5,6 +5,8 @@ from pygame.locals import *
 import time
 import math
 
+RED = "#FF0000"
+
 PLAYER_SHIP = pg.image.load(os.path.join("Assets", "RocketShip.png"))
 ENEMY_SHIP = pg.image.load(os.path.join("Assets", "EnemyShip.png"))
 BULLET_IMAGE = pg.image.load(os.path.join("Assets", "laser2.png"))
@@ -70,7 +72,7 @@ class Player(Ship):
   
   def draw_score(self, window):
     main_font = pg.font.SysFont("arial", 30)
-    score_label = main_font.render(f"Score: {self.score}", 1, (255, 0, 0))
+    score_label = main_font.render(f"Score: {self.score}", 1, RED)
     window.blit(score_label, (10, 925))
 
 
