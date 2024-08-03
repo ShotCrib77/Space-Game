@@ -5,16 +5,21 @@ from pygame.locals import *
 import time
 import math
 
+# Colors
 RED = "#FF0000"
 
+# Images
 PLAYER_SHIP = pg.image.load(os.path.join("Assets", "RocketShip.png"))
 ENEMY_SHIP = pg.image.load(os.path.join("Assets", "EnemyShip.png"))
 BULLET_IMAGE = pg.image.load(os.path.join("Assets", "laser2.png"))
-clock = pg.time.Clock()
 
+
+# Variables and Constants
 FPS = 60
 player : object
 score : int
+
+clock = pg.time.Clock()
 
 class Ship:
   def __init__(self, x, y):
@@ -30,7 +35,7 @@ class Player(Ship):
   def __init__(self, x, y):
     super().__init__(x, y)
     self.last_shot_time = 0
-    self.cooldown = 500
+    self.cooldown = 2500
     self.ship_img = PLAYER_SHIP
     self.mask = pg.mask.from_surface(self.ship_img)
     self.bullets = []
@@ -134,12 +139,19 @@ class EnemyManager:
     x_spawn = random.randint(100, 600)
     new_enemy = Enemy(x_spawn, 0, 2)
     self.enemies.append(new_enemy)
+  
+  def remove_enemies(self, enemy=None):
+    if enemy is None:
+      self.enemies = []
+    
+    elif enemy in self.enemies:
+      self.enemies.remove(enemy)
     
   def update_enemies(self):
     for enemy in self.enemies:
       enemy.move()
       if enemy.y > 800 or enemy.x < -50 or enemy.x > 650:
-        self.enemies.remove(enemy)
+        self.remove_enemies(enemy)
   
   def draw_enemies(self, window):
     for enemy in self.enemies:
@@ -154,6 +166,6 @@ class EnemyManager:
           # Checks for collision
           if enemy.mask.overlap(bullet.mask, (offset_x, offset_y)):
             bullets.remove(bullet)
-            self.enemies.remove(enemy)
+            self.remove_enemies(enemy)
             self.player.update_score()
             break
