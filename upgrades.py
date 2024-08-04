@@ -2,14 +2,12 @@ import pygame as pg
 import os
 import random
 from pygame.locals import *
+from ship import Player
 import time
 import math
 
 pg.font.init()
 pg.init()
-
-
-global upgrade_menu_active
 
 # Colors
 GREY = "#636262"
@@ -21,16 +19,6 @@ RED = "#FF0000"
 upgrade_font = pg.font.SysFont("verdana", 18)
 upgrade_effect_font = pg.font.SysFont("verdana", 12)
 main_font = pg.font.SysFont("arial", 36)
-
-
-def action_button_1():
-  print("Meow")
-
-def action_button_2():
-  print("Woof")
-
-def action_button_3():
-  print("MUU")
 
 
 class Button:
@@ -68,16 +56,19 @@ class Button:
   
 
 class UpgradeMenuManager:
-  def __init__(self) -> None:
-    # Initialize buttons
-    self.button_dmg = Button((50, 72, 128, 92), "DAMAGE", 100, "1 -> 2", GREY, action_button_1)
-    self.button_lasercd = Button((236, 72, 128, 92), "LASER CD", 100, "2500 -> 2250", GREY, action_button_2)
-    self.button_heal = Button((422, 72, 128, 92), "HEAL", 100, "Times Heald: 0", GREY, action_button_3)
-    self.button_done = Button((236, 320, 128, 92), "Done", None, None, BLACK, self.done_button)
-    
+  def __init__(self, player:Player) -> None:
+    self.player = player
     self.upgrade_menu_active = False
-    self.buttons = [self.button_dmg, self.button_lasercd, self.button_heal, self.button_done]
     self.score_for_next_level = 3
+    self.times_heald = 0
+    # Initialize buttons
+    self.button_damage = Button((50, 72, 128, 92), "DAMAGE", 100, str(self.player.damage) + " -> " + str(self.player.damage + 1) , GREY, self.damage_button_action)
+    self.button_lasercd = Button((236, 72, 128, 92), "LASER CD", 100, str(self.player.cooldown) + " -> " + str(math.ceil((self.player.cooldown * 0.8))), GREY, self.lasercd_button_action)
+    self.button_heal = Button((422, 72, 128, 92), "HEAL", 100, "Times Heald: " + str(self.times_heald), GREY, self.heal_button_action)
+    self.button_done = Button((236, 320, 128, 92), "Done", None, None, BLACK, self.done_button_action)
+    
+    self.buttons = [self.button_damage, self.button_lasercd, self.button_heal, self.button_done]
+    
     # Makes a grey 600x400 screen (widthxheight).
     self.upgrade_menu_surface = pg.Surface((600, 400))
     
@@ -100,6 +91,24 @@ class UpgradeMenuManager:
   def button_interaction(self, event:pg.event) -> None:
     [button.is_clicked(event) for button in self.buttons]
     
-  def done_button(self) -> None:
+  def done_button_action(self) -> None:
     self.score_for_next_level = math.ceil(self.score_for_next_level * 3)
     self.set_upgrade_menu_active(False)
+    
+  def lasercd_button_action(self):
+    print(self.player.cooldown)
+    self.player.cooldown = math.ceil(self.player.cooldown * 0.8)
+    self.button_lasercd.upgrade_effect = str(self.player.cooldown) + " -> " + str(math.ceil((self.player.cooldown * 0.8)))
+    self.button_lasercd.price = math.ceil(self.button_lasercd.price * 1.25)
+    
+  def damage_button_action(self):
+    self.player.damage += 1
+    self.button_damage.upgrade_effect = str(self.player.damage) + " -> " + str(self.player.damage + 1)
+    self.button_damage.price = math.ceil(self.button_damage.price * 2.5)
+  
+  def heal_button_action(self):
+    if self.player.health < 10:
+      self.player.health = 10
+      self.times_heald += 1
+      self.button_heal.upgrade_effect = "Times heald: " + str(self.times_heald)
+      self.button_heal.price = math.ceil(self.button_heal.price * 5)

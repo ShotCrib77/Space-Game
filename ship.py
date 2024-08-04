@@ -5,6 +5,9 @@ from pygame.locals import *
 import time
 import math
 
+pg.init()
+pg.font.init()
+
 # Colors
 RED = "#FF0000"
 
@@ -13,6 +16,8 @@ PLAYER_SHIP = pg.image.load(os.path.join("Assets", "RocketShip.png"))
 ENEMY_SHIP = pg.image.load(os.path.join("Assets", "EnemyShip.png"))
 BULLET_IMAGE = pg.image.load(os.path.join("Assets", "laser2.png"))
 
+# Fonts
+ship_info_font = pg.font.SysFont("arial", 30)
 
 # Variables and Constants
 FPS = 60
@@ -21,26 +26,32 @@ score : int
 
 clock = pg.time.Clock()
 
+
+
 class Ship:
-  def __init__(self, x, y):
+  def __init__(self, x:int, y:int, surface:pg.Surface):
     self.x = x
     self.y = y
     self.ship_img = None
     self.cool_down_counter = 0
+    self.surface = surface
   
-  def draw(self, window):
-    window.blit(self.ship_img, (self.x, self.y))
+  def draw(self):
+    self.surface.blit(self.ship_img, (self.x, self.y))
 
 class Player(Ship):
-  def __init__(self, x, y):
-    super().__init__(x, y)
+  def __init__(self, x:int, y:int, surface:pg.Surface):
+    super().__init__(x, y, surface)
     self.last_shot_time = 0
     self.cooldown = 2500
     self.ship_img = PLAYER_SHIP
     self.mask = pg.mask.from_surface(self.ship_img)
     self.bullets = []
     self.score = 0
-
+    self.damage = 1
+    self.health = 10
+    self.surface = surface
+    
   def player_shoot(self, click_x, click_y):
     current_time = pg.time.get_ticks()
     if (current_time - self.last_shot_time) >= self.cooldown:
@@ -51,12 +62,12 @@ class Player(Ship):
       angle_radians = math.atan2(shot_y, shot_x)
 
       bullet_speed = 4 
-      
+    
       vel_x = bullet_speed * math.cos(angle_radians)
       vel_y = bullet_speed * math.sin(angle_radians)
       
       # Create a new bullet instance
-      new_bullet = Bullet((self.x + 125), (self.y + 35), vel_x, vel_y)
+      new_bullet = Bullet((self.x + 125), (self.y + 35), vel_x, vel_y, self.surface)
       self.bullets.append(new_bullet)
       self.last_shot_time = current_time
 
@@ -68,22 +79,22 @@ class Player(Ship):
         new_bullets.append(bullet)
     self.bullets = new_bullets  # Only keep bullets that are still "alive". (change name?)
   
-  def draw_bullets(self, window):
+  def draw_bullets(self):
     for bullet in self.bullets:
-      bullet.draw_bullet(window)
+      bullet.draw_bullet()
   
   def update_score(self):
     self.score += 1
   
-  def draw_score(self, window):
-    main_font = pg.font.SysFont("arial", 30)
-    score_label = main_font.render(f"Score: {self.score}", 1, RED)
-    window.blit(score_label, (10, 925))
-
+  def draw_ship_info(self):
+    self.score_label = ship_info_font.render(f"Score: {self.score}", True, RED)
+    self.health_label = ship_info_font.render(f"Health: {self.health}", True, RED)
+    self.surface.blit(self.score_label, (10, 925))
+    self.surface.blit(self.health_label, (650, 925))
 
   
 class Bullet:
-  def __init__(self, x, y, vx, vy):
+  def __init__(self, x, y, vx, vy, surface):
     self.x = x
     self.y = y
     self.vx = vx
@@ -91,6 +102,7 @@ class Bullet:
     self.bullet_image = BULLET_IMAGE
     self.angle_degrees = 90 + math.degrees(math.atan2(-vy, vx))
     self.alive = True
+    self.surface = surface
     
     self.rotated_image = pg.transform.rotate(self.bullet_image, self.angle_degrees)
     self.mask = pg.mask.from_surface(self.rotated_image)
@@ -106,38 +118,49 @@ class Bullet:
       self.rotated_image = pg.transform.rotate(self.bullet_image, self.angle_degrees)
       self.mask = pg.mask.from_surface(self.rotated_image)
       
-  def draw_bullet(self, window):
+  def draw_bullet(self):
     rect = self.rotated_image.get_rect(center=(self.x, self.y))
-    window.blit(self.rotated_image, rect)
+    self.surface.blit(self.rotated_image, rect)
     
   
     
 class Enemy(Ship):
-  def __init__(self, x, y, enemy_vel_y):
-    super().__init__(x, y)
+  def __init__(self, x, y, enemy_vel_y, surface: pg.Surface):
+    super().__init__(x, y, surface)
     self.ship_img = ENEMY_SHIP
     self.enemy_vel_y = enemy_vel_y
     self.enemy_vel_x = 0
     self.mask = pg.mask.from_surface(self.ship_img)
     self.last_update_time = pg.time.get_ticks()
+    self.surface = surface
   
-  def move(self):
+  def move(self, direction=None):
     current_time = pg.time.get_ticks()
-    if current_time - self.last_update_time >= 1000:
-      self.enemy_vel_x = random.randint(-1, 1)
+    if direction == None:
+      if current_time - self.last_update_time >= 1000:
+        self.enemy_vel_x = random.randint(-1, 1)
+        self.last_update_time = current_time
+        
+    elif direction == "<MIN":
+      self.enemy_vel_x = 1
+      self.last_update_time = current_time
+    
+    elif direction == ">MAX":
+      self.enemy_vel_x = -1
       self.last_update_time = current_time
       
-    self.y += self.enemy_vel_y
     self.x += self.enemy_vel_x
+    self.y += self.enemy_vel_y
       
 class EnemyManager:
-  def __init__(self, player):
+  def __init__(self, player, surface:pg.Surface):
     self.enemies = []
     self.player = player
+    self.surface = surface
   
   def create_enemy(self):
     x_spawn = random.randint(100, 600)
-    new_enemy = Enemy(x_spawn, 0, 2)
+    new_enemy = Enemy(x_spawn, 0, 2, self.surface)
     self.enemies.append(new_enemy)
   
   def remove_enemies(self, enemy=None):
@@ -150,12 +173,20 @@ class EnemyManager:
   def update_enemies(self):
     for enemy in self.enemies:
       enemy.move()
-      if enemy.y > 800 or enemy.x < -50 or enemy.x > 650:
+      
+      if enemy.y > 850:
         self.remove_enemies(enemy)
+        
+      elif enemy.x < -25:
+        enemy.move("<MIN")
+              
+      elif enemy.x > 700:
+        enemy.move(">MAX")
+
   
-  def draw_enemies(self, window):
+  def draw_enemies(self):
     for enemy in self.enemies:
-      window.blit(enemy.ship_img, (enemy.x, enemy.y))
+      self.surface.blit(enemy.ship_img, (enemy.x, enemy.y))
   
   def check_bullet_hits(self, bullets):
     for bullet in bullets:

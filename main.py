@@ -38,9 +38,9 @@ def main():
     player_vel = 2
     enemy_spawn_timer = 500
     
-    player = Player(SHIP_LOCATION[0], SHIP_LOCATION[1])
-    enemy_manager = EnemyManager(player)
-    upgrades_menu_manager = UpgradeMenuManager()
+    player = Player(SHIP_LOCATION[0], SHIP_LOCATION[1], main_surface)
+    enemy_manager = EnemyManager(player, main_surface)
+    upgrades_menu_manager = UpgradeMenuManager(player)
     game_loop_manager = GameLoopManager(screen, main_surface, upgrades_menu_manager, enemy_manager)
     clock = pg.time.Clock()
     last_enemy_time = pg.time.get_ticks()
@@ -48,10 +48,10 @@ def main():
     # Updates window
     def redraw_window():
         main_surface.blit(BG, (0, 0))
-        player.draw_score(main_surface)
-        player.draw(main_surface)
-        enemy_manager.draw_enemies(main_surface)
-        player.draw_bullets(main_surface)
+        player.draw_ship_info()
+        player.draw()
+        enemy_manager.draw_enemies()
+        player.draw_bullets()
         player.update_player()
         screen.blit(main_surface, (0, 0))
         if upgrades_menu_manager.upgrade_menu_active:
@@ -71,8 +71,7 @@ def main():
             
             if upgrades_menu_manager.upgrade_menu_active: 
                 upgrades_menu_manager.button_interaction(event)
-                print(upgrades_menu_manager.upgrade_menu_active)
-            
+
                      
         keys = pg.key.get_pressed()
     
