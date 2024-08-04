@@ -8,6 +8,9 @@ import math
 pg.font.init()
 pg.init()
 
+
+global upgrade_menu_active
+
 # Colors
 GREY = "#636262"
 BLACK = "#262626"
@@ -19,6 +22,7 @@ upgrade_font = pg.font.SysFont("verdana", 18)
 upgrade_effect_font = pg.font.SysFont("verdana", 12)
 main_font = pg.font.SysFont("arial", 36)
 
+
 def action_button_1():
   print("Meow")
 
@@ -28,8 +32,6 @@ def action_button_2():
 def action_button_3():
   print("MUU")
 
-def done_button():
-  print("Ikajs")
 
 class Button:
   def __init__(self, rect:tuple, upgrade_type:str, price:int, upgrade_effect:str, color:str, action=None) -> None:
@@ -71,11 +73,11 @@ class UpgradeMenuManager:
     self.button_dmg = Button((50, 72, 128, 92), "DAMAGE", 100, "1 -> 2", GREY, action_button_1)
     self.button_lasercd = Button((236, 72, 128, 92), "LASER CD", 100, "2500 -> 2250", GREY, action_button_2)
     self.button_heal = Button((422, 72, 128, 92), "HEAL", 100, "Times Heald: 0", GREY, action_button_3)
-    self.button_done = Button((236, 320, 128, 92), "Done", None, None, BLACK, done_button)
+    self.button_done = Button((236, 320, 128, 92), "Done", None, None, BLACK, self.done_button)
     
-    
+    self.upgrade_menu_active = False
     self.buttons = [self.button_dmg, self.button_lasercd, self.button_heal, self.button_done]
-    
+    self.score_for_next_level = 3
     # Makes a grey 600x400 screen (widthxheight).
     self.upgrade_menu_surface = pg.Surface((600, 400))
     
@@ -89,9 +91,15 @@ class UpgradeMenuManager:
   def draw_surface(self, screen:pg.display, start_x:int, start_y:int) -> None:
     screen.blit(self.upgrade_menu_surface, (start_x, start_y))
   
+  def set_upgrade_menu_active(self, state:bool) -> None:
+    self.upgrade_menu_active = state
   
   def draw_buttons(self) -> None:
     [button.draw(self.upgrade_menu_surface) for button in self.buttons]
-    
+
   def button_interaction(self, event:pg.event) -> None:
     [button.is_clicked(event) for button in self.buttons]
+    
+  def done_button(self) -> None:
+    self.score_for_next_level = math.ceil(self.score_for_next_level * 3)
+    self.set_upgrade_menu_active(False)

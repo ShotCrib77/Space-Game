@@ -37,7 +37,6 @@ def main():
     run = True
     player_vel = 2
     enemy_spawn_timer = 500
-    upgrade_menu_active = False
     
     player = Player(SHIP_LOCATION[0], SHIP_LOCATION[1])
     enemy_manager = EnemyManager(player)
@@ -55,10 +54,9 @@ def main():
         player.draw_bullets(main_surface)
         player.update_player()
         screen.blit(main_surface, (0, 0))
-        
-        if upgrade_menu_active:
+        if upgrades_menu_manager.upgrade_menu_active:
             game_loop_manager.draw_upgrades()
-        pg.display.update() # Makes all of these updates actually happen. 
+        pg.display.update() # Makes all of these updates actually happen.
 
 
     while run:
@@ -71,31 +69,32 @@ def main():
             if event.type == pg.QUIT:
                 run = False
             
-            if upgrade_menu_active: 
+            if upgrades_menu_manager.upgrade_menu_active: 
                 upgrades_menu_manager.button_interaction(event)
+                print(upgrades_menu_manager.upgrade_menu_active)
             
                      
         keys = pg.key.get_pressed()
     
-        if keys[pg.K_a] and player.x - player_vel > 0 and upgrade_menu_active == False:
+        if keys[pg.K_a] and player.x - player_vel > 0 and not upgrades_menu_manager.upgrade_menu_active:
             player.x -= player_vel
             
-        if keys[pg.K_d] and player.x + player.ship_img.get_width() + player_vel < WIDTH and upgrade_menu_active == False:
+        if keys[pg.K_d] and player.x + player.ship_img.get_width() + player_vel < WIDTH and not upgrades_menu_manager.upgrade_menu_active:
             player.x += player_vel
             
-        if event.type == MOUSEBUTTONDOWN and event.button == 1 and upgrade_menu_active == False:
+        if event.type == MOUSEBUTTONDOWN and event.button == 1 and not upgrades_menu_manager.upgrade_menu_active:
             click_x, click_y = event.pos
             player.player_shoot(click_x, click_y)
 
         enemy_manager.update_enemies()
         enemy_manager.check_bullet_hits(player.bullets)
         
-        if current_time - last_enemy_time >= enemy_spawn_timer and upgrade_menu_active == False:
+        if current_time - last_enemy_time >= enemy_spawn_timer and not upgrades_menu_manager.upgrade_menu_active:
             enemy_manager.create_enemy()
             last_enemy_time = current_time 
             
-        if player.score == 3:
-            upgrade_menu_active = True
+        if player.score == upgrades_menu_manager.score_for_next_level:
+            upgrades_menu_manager.set_upgrade_menu_active(True)
             
     pg.quit()
 
