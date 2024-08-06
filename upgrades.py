@@ -31,7 +31,7 @@ class Button:
     self.color = color
     
   def draw(self, surface:pg.Surface) -> None:
-    button_rectangle = pg.draw.rect(surface, self.color, self.rect)
+    pg.draw.rect(surface, self.color, self.rect)
     if self.upgrade_type != None:
       button_info = upgrade_font.render(self.upgrade_type, True, WHITE)
       text_rect_info = button_info.get_rect(center=(self.rect.centerx, self.rect.centery - 20))
@@ -69,7 +69,7 @@ class UpgradeMenuManager:
     
     self.buttons = [self.button_damage, self.button_lasercd, self.button_heal, self.button_done]
     
-    # Makes a grey 600x400 screen (widthxheight).
+    # Makes a grey 600x400 screen (width, height).
     self.upgrade_menu_surface = pg.Surface((600, 400))
     
     # Upgrade Header
@@ -96,17 +96,16 @@ class UpgradeMenuManager:
     self.set_upgrade_menu_active(False)
     
   def lasercd_button_action(self):
-    print(self.player.cooldown)
     self.player.cooldown = math.ceil(self.player.cooldown * 0.8)
     self.button_lasercd.upgrade_effect = str(self.player.cooldown) + " -> " + str(math.ceil((self.player.cooldown * 0.8)))
     self.button_lasercd.price = math.ceil(self.button_lasercd.price * 1.25)
     
-  def damage_button_action(self):
+  def damage_button_action(self) -> None:
     self.player.damage += 1
     self.button_damage.upgrade_effect = str(self.player.damage) + " -> " + str(self.player.damage + 1)
     self.button_damage.price = math.ceil(self.button_damage.price * 2.5)
   
-  def heal_button_action(self):
+  def heal_button_action(self) -> None:
     if self.player.health < 10:
       self.player.health = 10
       self.times_heald += 1

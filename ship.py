@@ -8,6 +8,9 @@ import math
 pg.init()
 pg.font.init()
 
+# Constants
+WIDTH = 800 #px
+
 # Colors
 RED = "#FF0000"
 
@@ -16,13 +19,17 @@ PLAYER_SHIP = pg.image.load(os.path.join("Assets", "RocketShip.png"))
 ENEMY_SHIP = pg.image.load(os.path.join("Assets", "EnemyShip.png"))
 BULLET_IMAGE = pg.image.load(os.path.join("Assets", "laser2.png"))
 
+MINING_LASER_IMAGE_FRAME_1 = pg.image.load(os.path.join("Assets", "mining_laser_v6_frame_1.png"))
+MINING_LASER_IMAGE_FRAME_2 = pg.image.load(os.path.join("Assets", "mining_laser_v6_frame_2.png"))
+MINING_LASER_IMAGE_FRAME_3 = pg.image.load(os.path.join("Assets", "mining_laser_v6_frame_3.png"))
+MINING_LASER_IMAGE_FRAME_4 = pg.image.load(os.path.join("Assets", "mining_laser_v6_frame_4.png"))
+MINING_LASER_IMAGE_FRAME_5 = pg.image.load(os.path.join("Assets", "mining_laser_v6_frame_5.png"))
 # Fonts
 ship_info_font = pg.font.SysFont("arial", 30)
 
 # Variables and Constants
 FPS = 60
-player : object
-score : int
+
 
 clock = pg.time.Clock()
 
@@ -40,7 +47,7 @@ class Ship:
     self.surface.blit(self.ship_img, (self.x, self.y))
 
 class Player(Ship):
-  def __init__(self, x:int, y:int, surface:pg.Surface):
+  def __init__(self, x:int, y:int, surface:pg.Surface, player_vel:int):
     super().__init__(x, y, surface)
     self.last_shot_time = 0
     self.cooldown = 2500
@@ -50,7 +57,10 @@ class Player(Ship):
     self.score = 0
     self.damage = 1
     self.health = 10
+    self.player_vel = player_vel
     self.surface = surface
+    self.mining_power = 1
+    self.mining_laser_rect = pg.Rect((self.x + 115), (self.y - 605), 25, 650)
     
   def player_shoot(self, click_x, click_y):
     current_time = pg.time.get_ticks()
@@ -70,7 +80,20 @@ class Player(Ship):
       new_bullet = Bullet((self.x + 125), (self.y + 35), vel_x, vel_y, self.surface)
       self.bullets.append(new_bullet)
       self.last_shot_time = current_time
-
+      
+  def mining_laser(self, tick:pg.time) -> None:
+    #pg.draw.rect(self.surface, RED, self.mining_laser_rect) # ** FOR TESTING **
+    if (tick//500) % 5 == 4:
+      self.surface.blit(MINING_LASER_IMAGE_FRAME_1, ((self.x + 80), (self.y - 605)))
+    elif (tick//500) % 5 == 3: 
+      self.surface.blit(MINING_LASER_IMAGE_FRAME_2, ((self.x + 80), (self.y - 605)))
+    elif (tick//500) % 5 == 2: 
+      self.surface.blit(MINING_LASER_IMAGE_FRAME_3, ((self.x + 80), (self.y - 605)))
+    elif (tick//500) % 5 == 1: 
+      self.surface.blit(MINING_LASER_IMAGE_FRAME_4, ((self.x + 80), (self.y - 605)))
+    elif (tick//500) % 5 == 0: 
+      self.surface.blit(MINING_LASER_IMAGE_FRAME_5, ((self.x + 80), (self.y - 605)))
+  
   def update_player(self):
     new_bullets = []
     for bullet in self.bullets:
@@ -91,6 +114,15 @@ class Player(Ship):
     self.health_label = ship_info_font.render(f"Health: {self.health}", True, RED)
     self.surface.blit(self.score_label, (10, 925))
     self.surface.blit(self.health_label, (650, 925))
+  
+  def move(self, keys, upgrades_menu_manager, player):
+    if keys[pg.K_a] and player.x - self.player_vel > 0 and not upgrades_menu_manager.upgrade_menu_active:
+      player.x -= self.player_vel
+      self.mining_laser_rect[0] -= self.player_vel
+      
+    if keys[pg.K_d] and player.x + player.ship_img.get_width() + self.player_vel < WIDTH and not upgrades_menu_manager.upgrade_menu_active:
+      player.x += self.player_vel
+      self.mining_laser_rect[0] += self.player_vel
 
   
 class Bullet:
@@ -122,7 +154,6 @@ class Bullet:
     rect = self.rotated_image.get_rect(center=(self.x, self.y))
     self.surface.blit(self.rotated_image, rect)
     
-  
     
 class Enemy(Ship):
   def __init__(self, x, y, enemy_vel_y, surface: pg.Surface):
