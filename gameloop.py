@@ -13,7 +13,7 @@ WIDTH = 800
 HEIGHT = 1000
 
 # Images
-BG = pg.transform.scale(pg.image.load(os.path.join("Assets", "backgroundSpace.png")), (WIDTH, HEIGHT))
+BG = pg.transform.scale(pg.image.load(os.path.join("assets", "background_space.png")), (WIDTH, HEIGHT))
 
 def surface_scale(surface, scale_factor): # Scales everyhting on the screen (1 being default (normal scale)). A lower or higher scale will result in a blury feel - Used for upgrade menu
   small_size = (int(surface.get_width() * scale_factor), int(surface.get_height() * scale_factor))

@@ -15,15 +15,15 @@ WIDTH = 800 #px
 RED = "#FF0000"
 
 # Images
-PLAYER_SHIP = pg.image.load(os.path.join("Assets", "RocketShip.png"))
-ENEMY_SHIP = pg.image.load(os.path.join("Assets", "EnemyShip.png"))
-BULLET_IMAGE = pg.image.load(os.path.join("Assets", "laser2.png"))
+PLAYER_SHIP = pg.image.load(os.path.join("assets", "player", "rocket_ship.png"))
+ENEMY_SHIP = pg.image.load(os.path.join("assets", "enemies", "enemy_ship.png"))
+BULLET_IMAGE = pg.image.load(os.path.join("assets", "player", "laser2.png"))
 
-MINING_LASER_IMAGE_FRAME_1 = pg.image.load(os.path.join("Assets", "mining_laser_v6_frame_1.png"))
-MINING_LASER_IMAGE_FRAME_2 = pg.image.load(os.path.join("Assets", "mining_laser_v6_frame_2.png"))
-MINING_LASER_IMAGE_FRAME_3 = pg.image.load(os.path.join("Assets", "mining_laser_v6_frame_3.png"))
-MINING_LASER_IMAGE_FRAME_4 = pg.image.load(os.path.join("Assets", "mining_laser_v6_frame_4.png"))
-MINING_LASER_IMAGE_FRAME_5 = pg.image.load(os.path.join("Assets", "mining_laser_v6_frame_5.png"))
+MINING_LASER_IMAGE_FRAME_1 = pg.image.load(os.path.join("assets", "player", "laser_beam", "mining_laser_v6_frame_1.png"))
+MINING_LASER_IMAGE_FRAME_2 = pg.image.load(os.path.join("assets", "player", "laser_beam", "mining_laser_v6_frame_2.png"))
+MINING_LASER_IMAGE_FRAME_3 = pg.image.load(os.path.join("assets", "player", "laser_beam", "mining_laser_v6_frame_3.png"))
+MINING_LASER_IMAGE_FRAME_4 = pg.image.load(os.path.join("assets", "player", "laser_beam", "mining_laser_v6_frame_4.png"))
+MINING_LASER_IMAGE_FRAME_5 = pg.image.load(os.path.join("assets", "player", "laser_beam", "mining_laser_v6_frame_5.png"))
 # Fonts
 ship_info_font = pg.font.SysFont("arial", 30)
 
@@ -60,7 +60,9 @@ class Player(Ship):
     self.player_vel = player_vel
     self.surface = surface
     self.mining_power = 1
-    self.mining_laser_rect = pg.Rect((self.x + 115), (self.y - 605), 25, 650)
+    self.mining_laser_beam_rect = pg.Rect((self.x + 115), (self.y - 605), 25, 650)
+    self.mining_laser_beam_mask = pg.mask.from_surface(MINING_LASER_IMAGE_FRAME_1)
+    self.mining_laser_beam_cooldown = 500
     
   def player_shoot(self, click_x, click_y):
     current_time = pg.time.get_ticks()
@@ -115,14 +117,19 @@ class Player(Ship):
     self.surface.blit(self.score_label, (10, 925))
     self.surface.blit(self.health_label, (650, 925))
   
-  def move(self, keys, upgrades_menu_manager, player):
+  def move(self, keys, upgrades_menu_manager, player, moving: bool, left_mouse_button_down: bool):
+    moving=False
     if keys[pg.K_a] and player.x - self.player_vel > 0 and not upgrades_menu_manager.upgrade_menu_active:
       player.x -= self.player_vel
-      self.mining_laser_rect[0] -= self.player_vel
+      self.mining_laser_beam_rect[0] -= self.player_vel
+      moving = True
       
-    if keys[pg.K_d] and player.x + player.ship_img.get_width() + self.player_vel < WIDTH and not upgrades_menu_manager.upgrade_menu_active:
+    elif keys[pg.K_d] and player.x + player.ship_img.get_width() + self.player_vel < WIDTH and not upgrades_menu_manager.upgrade_menu_active:
       player.x += self.player_vel
-      self.mining_laser_rect[0] += self.player_vel
+      self.mining_laser_beam_rect[0] += self.player_vel
+      moving = True
+    
+    return moving
 
   
 class Bullet:

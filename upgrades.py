@@ -20,6 +20,8 @@ upgrade_font = pg.font.SysFont("verdana", 18)
 upgrade_effect_font = pg.font.SysFont("verdana", 12)
 main_font = pg.font.SysFont("arial", 36)
 
+# Images
+
 
 class Button:
   def __init__(self, rect:tuple, upgrade_type:str, price:int, upgrade_effect:str, color:str, action=None) -> None:
@@ -68,6 +70,7 @@ class UpgradeMenuManager:
     self.button_done = Button((236, 320, 128, 92), "Done", None, None, BLACK, self.done_button_action)
     
     self.buttons = [self.button_damage, self.button_lasercd, self.button_heal, self.button_done]
+    self.upgrade_materials = {"Metiorite Stone": 0, "Malachite": 0, "Blue Crystal": 0, "Magma Stone": 0}
     
     # Makes a grey 600x400 screen (width, height).
     self.upgrade_menu_surface = pg.Surface((600, 400))
@@ -78,6 +81,11 @@ class UpgradeMenuManager:
     self.upgrade_header = main_font.render("Upgrades", True, WHITE)
     self.upgrade_header_text = self.upgrade_header.get_rect(center=(self.upgrade_header_rect.centerx, self.upgrade_header_rect.centery - 20))
     self.upgrade_menu_surface.blit(self.upgrade_header, self.upgrade_header_text)
+    
+  def redraw_material(self, material_tier_image:pg.image, material_type:str, x:int, y:int) -> None:
+    self.upgrade_menu_surface.blit(material_tier_image, (x, y))
+    material_amount_label = upgrade_effect_font.render(str(self.upgrade_materials[material_type]), True, RED)
+    self.upgrade_menu_surface.blit(material_amount_label, ((x+35), y))
     
   def draw_surface(self, screen:pg.display, start_x:int, start_y:int) -> None:
     screen.blit(self.upgrade_menu_surface, (start_x, start_y))
