@@ -1,15 +1,14 @@
+# Modules/Libraries
 import pygame as pg
 import os
 import random
 from pygame.locals import *
-import time
 import math
 
-pg.init()
 pg.font.init()
 
 # Constants
-WIDTH = 800 #px
+WIDTH = 800
 
 # Colors
 RED = "#FF0000"
@@ -24,13 +23,11 @@ MINING_LASER_IMAGE_FRAME_2 = pg.image.load(os.path.join("assets", "player", "las
 MINING_LASER_IMAGE_FRAME_3 = pg.image.load(os.path.join("assets", "player", "laser_beam", "mining_laser_v6_frame_3.png"))
 MINING_LASER_IMAGE_FRAME_4 = pg.image.load(os.path.join("assets", "player", "laser_beam", "mining_laser_v6_frame_4.png"))
 MINING_LASER_IMAGE_FRAME_5 = pg.image.load(os.path.join("assets", "player", "laser_beam", "mining_laser_v6_frame_5.png"))
+
 # Fonts
 ship_info_font = pg.font.SysFont("arial", 30)
 
-# Variables and Constants
-FPS = 60
-
-
+# Variables
 clock = pg.time.Clock()
 
 
@@ -191,7 +188,7 @@ class Enemy(Ship):
     self.y += self.enemy_vel_y
       
 class EnemyManager:
-  def __init__(self, player, surface:pg.Surface):
+  def __init__(self, player:Player, surface:pg.Surface):
     self.enemies = []
     self.player = player
     self.surface = surface
@@ -214,6 +211,7 @@ class EnemyManager:
       
       if enemy.y > 850:
         self.remove_enemies(enemy)
+        self.player.health -= 1
         
       elif enemy.x < -25:
         enemy.move("<MIN")

@@ -1,12 +1,9 @@
 # Modules/Libraries
-from ship import Ship, Player, Enemy, EnemyManager, Bullet
-from upgrades import Button, UpgradeMenuManager
-from gameloop import GameLoopManager
+from ship import Player
 import pygame as pg
 from pygame.locals import *
 import os
 import random
-import time
 
 
 # Image
@@ -14,7 +11,7 @@ ASTROID_T1_IMAGE = pg.image.load(os.path.join("assets", "astroids", "astroid_t1.
 ASTROID_T2_IMAGE = pg.image.load(os.path.join("assets", "astroids", "astroid_t2.png"))
 ASTROID_T3_IMAGE = pg.image.load(os.path.join("assets", "astroids", "astroid_t3.png"))
 ASTROID_T4_IMAGE = pg.image.load(os.path.join("assets", "astroids", "astroid_t4.png"))
-ASTROID_MINING_IMAGE = pg.image.load(os.path.join("assets", "astroids", "astroid_mining.png"))
+
 
 class Astroid:
   def __init__(self, surface, astroid_image:pg.image, player:Player) -> None:
@@ -31,21 +28,26 @@ class Astroid:
       self.velx = random.randint(-2, -1)
     self.vely = 1
     self.player = player
-    self.material_amount = random.randint(1,5)
     self.last_mined = 0
   
     if astroid_image == ASTROID_T1_IMAGE:
       self.material_tier = "Metiorite Stone"
       self.astroid_health = 2
+      self.material_amount = random.randint(1,3) * self.astroid_health 
     elif astroid_image == ASTROID_T2_IMAGE:
       self.material_tier = "Malachite"
       self.astroid_health = 5
+      self.material_amount = random.randint(1,3) * 2 * self.astroid_health // 5
     elif astroid_image == ASTROID_T3_IMAGE:
       self.material_tier = "Blue Crystal"
       self.astroid_health = 10
+      self.material_amount = random.randint(1,3) * self.astroid_health // 5
     elif astroid_image == ASTROID_T4_IMAGE:
       self.material_tier = "Magma Stone"
       self.astroid_health = 20
+      self.material_amount = random.randint(1,3) * self.astroid_health // 10
+    
+    
     
   def update_astroids(self):
     self.x += self.velx
@@ -75,11 +77,21 @@ class Astroid:
   def add_material(self, materials_list):
     materials_list[self.material_tier] += self.material_amount
   
+  
+  
   def astroid_mining(self, mining_laser_cooldown, current_time) -> None:
     if (current_time - self.last_mined) >= mining_laser_cooldown:
-      self.image = ASTROID_MINING_IMAGE
+      original_center = self.rect.center
+      if self.material_tier == "Metiorite Stone":
+        self.image = pg.transform.scale_by(self.image, 0.65)
+      elif self.material_tier == "Malachite":
+        self.image = pg.transform.scale_by(self.image, 0.85)
+      elif self.material_tier == "Blue Crystal":
+        self.image = pg.transform.scale_by(self.image, 0.93)
+      elif self.material_tier == "Magma Stone":
+        self.image = pg.transform.scale_by(self.image, 0.975)
+      self.rect = self.image.get_rect(center=original_center)
       self.astroid_health -= 1
-      print(self.astroid_health)
       self.last_mined = current_time
       
  
@@ -128,3 +140,6 @@ class AstroidsManager:
             astroid.add_material(self.materials_list)
       else:
         self.astroids.remove(astroid)
+        
+  def remove_astroids(self):
+    self.astroids = []
