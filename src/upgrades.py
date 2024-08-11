@@ -2,7 +2,6 @@
 import pygame as pg
 import os
 from pygame.locals import *
-from ship import Player
 import math
 
 pg.font.init()
@@ -65,8 +64,9 @@ class Button:
   
 
 class UpgradeMenuManager:
-  def __init__(self, player:Player) -> None:
+  def __init__(self, player) -> None:
     self.player = player
+    self.enemy_manager = None
     self.upgrade_menu_active = False
     self.score_for_next_level = 3
     self.times_healed = 0
@@ -115,6 +115,9 @@ class UpgradeMenuManager:
     self.money_info_text = self.money_info.get_rect(center=(self.money_rect.centerx, self.money_rect.centery))
     self.upgrade_menu_surface.blit(self.money_info, self.money_info_text)
   
+  def import_enemy_manager(self, enemy_manager):
+    self.enemy_manager = enemy_manager
+  
   def draw_upgrade_menu(self):
     self.clear_display_areas()
 
@@ -159,6 +162,7 @@ class UpgradeMenuManager:
   def done_button_action(self) -> None:
     self.score_for_next_level = math.ceil(self.score_for_next_level * 3)
     self.set_upgrade_menu_active(False)
+    self.enemy_manager.boss_active(False)
     
   def lasercd_button_action(self):
     if self.money >= self.button_lasercd.price:

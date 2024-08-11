@@ -6,6 +6,7 @@ from gameloop import GameLoopManager
 import pygame as pg
 from pygame.locals import *
 import os
+import random
 
 # Initializes pygame
 pg.font.init()
@@ -20,6 +21,11 @@ SHIP_LOCATION = 260, 750 # Ship width = 140px Ship height = 160px
 BG = pg.transform.scale(pg.image.load(os.path.join("assets", "background_space.png")), (WIDTH, HEIGHT))
 PLAYER_SHIP_ICON = pg.image.load(os.path.join("assets", "player", "rocket_ship.png"))
 
+ENEMY_SHIP_IMAGE_NORMAL = pg.image.load(os.path.join("assets", "enemies", "enemy_ship_normal.png"))
+ENEMY_SHIP_IMAGE_SMALL = pg.image.load(os.path.join("assets", "enemies", "enemy_ship_small.png"))
+ENEMY_SHIP_IMAGE_TANK = pg.image.load(os.path.join("assets", "enemies", "enemy_ship_tank.png"))
+ENEMY_SHIP_IMAGE_BOSS = pg.image.load(os.path.join("assets", "enemies", "enemy_ship_boss.png"))
+
 # Screen 
 pg.display.set_caption("Space Game")
 pg.display.set_icon(PLAYER_SHIP_ICON)
@@ -31,19 +37,22 @@ def main():
     # Variables and constants
     FPS = 60
     run = True
-    enemy_spawn_timer = 2500
+    enemy_spawn_timer = 5000
     astroids_spawn_timer = 10000
     right_mouse_button_down = False
     left_mouse_button_down = False
     moving = False
     player = Player(SHIP_LOCATION[0], SHIP_LOCATION[1], main_surface, 2)
-    enemy_manager = EnemyManager(player, main_surface)
     upgrades_menu_manager = UpgradeMenuManager(player)
+    enemy_manager = EnemyManager(player, main_surface, upgrades_menu_manager)
     astroids_manager = AstroidsManager(main_surface, player, upgrades_menu_manager.upgrade_materials)
     game_loop_manager = GameLoopManager(screen, main_surface, upgrades_menu_manager, enemy_manager, astroids_manager)
+    upgrades_menu_manager.import_enemy_manager(enemy_manager)
     clock = pg.time.Clock()
     last_enemy_time = pg.time.get_ticks()
     last_astroid_time = pg.time.get_ticks()
+    choose_enemy = [1, 2, 3]
+    
     
     # Updates window
     def redraw_window():
@@ -102,20 +111,24 @@ def main():
         
         if right_mouse_button_down and not upgrades_menu_manager.upgrade_menu_active and not left_mouse_button_down and not game_loop_manager.game_over_active: # Laser mining beam has to be blited out before main_surface
             astroids_manager.check_astroids_hit(current_time)
+            print(enemy_manager.active)
+            print(upgrades_menu_manager.score_for_next_level)
               
         enemy_manager.update_enemies()
         enemy_manager.check_bullet_hits(player.bullets)
         
         if current_time - last_enemy_time >= enemy_spawn_timer and not upgrades_menu_manager.upgrade_menu_active and not game_loop_manager.game_over_active:
-            enemy_manager.create_enemy()
+            if player.score >= upgrades_menu_manager.score_for_next_level and not enemy_manager.active:
+                enemy_manager.create_enemy(4)
+                enemy_manager.boss_active(True)
+            else:
+                enemy_type = random.choice(choose_enemy)
+                enemy_manager.create_enemy(enemy_type)
             last_enemy_time = current_time
             
         if current_time - last_astroid_time >= astroids_spawn_timer and not upgrades_menu_manager.upgrade_menu_active and not game_loop_manager.game_over_active:
             astroids_manager.spawn_astroid()
             last_astroid_time = current_time
-        
-        if player.score == upgrades_menu_manager.score_for_next_level:
-            upgrades_menu_manager.set_upgrade_menu_active(True)
         
         if player.health == 0:
             game_loop_manager.set_game_over_active(True)

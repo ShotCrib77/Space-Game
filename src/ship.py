@@ -5,6 +5,8 @@ import random
 from pygame.locals import *
 import math
 
+from upgrades import UpgradeMenuManager
+
 pg.font.init()
 
 # Constants
@@ -15,7 +17,12 @@ RED = "#FF0000"
 
 # Images
 PLAYER_SHIP = pg.image.load(os.path.join("assets", "player", "rocket_ship.png"))
-ENEMY_SHIP = pg.image.load(os.path.join("assets", "enemies", "enemy_ship.png"))
+ENEMY_SHIP_IMAGE_NORMAL = pg.image.load(os.path.join("assets", "enemies", "enemy_ship_normal.png"))
+ENEMY_SHIP_IMAGE_SMALL = pg.image.load(os.path.join("assets", "enemies", "enemy_ship_small.png"))
+ENEMY_SHIP_IMAGE_TANK = pg.image.load(os.path.join("assets", "enemies", "enemy_ship_tank.png"))
+ENEMY_SHIP_IMAGE_BOSS = pg.image.load(os.path.join("assets", "enemies", "enemy_ship_boss.png"))
+
+
 BULLET_IMAGE = pg.image.load(os.path.join("assets", "player", "laser2.png"))
 
 MINING_LASER_IMAGE_FRAME_1 = pg.image.load(os.path.join("assets", "player", "laser_beam", "mining_laser_v6_frame_1.png"))
@@ -105,8 +112,8 @@ class Player(Ship):
     for bullet in self.bullets:
       bullet.draw_bullet()
   
-  def update_score(self):
-    self.score += 1
+  def update_score(self, amount):
+    self.score += amount
   
   def draw_ship_info(self):
     self.score_label = ship_info_font.render(f"Score: {self.score}", True, RED)
@@ -160,14 +167,18 @@ class Bullet:
     
     
 class Enemy(Ship):
-  def __init__(self, x, y, enemy_vel_y, surface: pg.Surface):
+
+  def __init__(self,surface: pg.Surface, x: int, y: int, enemy_image: pg.image, health: int, damage: int, vel_y:int, enemy_type: int):
     super().__init__(x, y, surface)
-    self.ship_img = ENEMY_SHIP
-    self.enemy_vel_y = enemy_vel_y
+    self.ship_img = enemy_image
+    self.enemy_vel_y = vel_y
     self.enemy_vel_x = 0
+    self.damage = damage
+    self.health = health
     self.mask = pg.mask.from_surface(self.ship_img)
     self.last_update_time = pg.time.get_ticks()
     self.surface = surface
+    self.enemy_type = enemy_type
   
   def move(self, direction=None):
     current_time = pg.time.get_ticks()
@@ -188,15 +199,42 @@ class Enemy(Ship):
     self.y += self.enemy_vel_y
       
 class EnemyManager:
-  def __init__(self, player:Player, surface:pg.Surface):
+  def __init__(self, player:Player, surface:pg.Surface, upgrades_menu_manager:UpgradeMenuManager):
     self.enemies = []
     self.player = player
+    self.upgrades_menu_manager = upgrades_menu_manager
     self.surface = surface
-  
-  def create_enemy(self):
-    x_spawn = random.randint(100, 600)
-    new_enemy = Enemy(x_spawn, 0, 2, self.surface)
-    self.enemies.append(new_enemy)
+    self.active = False
+    self.level = 1  # Current game level or score/time factor
+    self.enemy_configs = {
+      1: {'image': ENEMY_SHIP_IMAGE_NORMAL, 'base_health': 2, 'base_damage': 1, 'base_velocity_y': 1, "enemy_type": 1}, # Normal enemy
+      2: {'image': ENEMY_SHIP_IMAGE_SMALL, 'base_health': 1, 'base_damage': 1, 'base_velocity_y': 2, "enemy_type": 2}, # Small enemy
+      3: {'image': ENEMY_SHIP_IMAGE_TANK, 'base_health': 5, 'base_damage': 2, 'base_velocity_y': 0.5, "enemy_type": 3}, # Tank enemy
+      4: {'image': ENEMY_SHIP_IMAGE_BOSS, 'base_health': 10, 'base_damage': 3, 'base_velocity_y': 0, "enemy_type": 4} # Boss enemy
+    }
+    
+  def scale_attribute(self, base_value: int, scale_factor: int, attribute=None) -> int | float:
+    if attribute == None:
+      return int(base_value + scale_factor * self.level)
+    else:
+      return (base_value + scale_factor * self.level)
+
+  def create_enemy(self, enemy_type: int):
+    config = self.enemy_configs.get(enemy_type)
+    if config:
+      if enemy_type != 4:
+        x_spawn = random.randint(100, 600)
+      else:
+        x_spawn = 300
+        
+      scaled_health = self.scale_attribute(config['base_health'], 0.5)  # Increase health by 0.5 per level
+      scaled_damage = self.scale_attribute(config['base_damage'], 0.1)  # Increase damage by 0.1 per level
+      scaled_velocity_y = self.scale_attribute(config['base_velocity_y'], 0.1, "base_velocity_y")  # Increase velocity by 0.1 per level
+      new_enemy = Enemy(self.surface, x_spawn, 1, config['image'], scaled_health, scaled_damage, scaled_velocity_y, config["enemy_type"])
+      self.enemies.append(new_enemy)
+
+  def boss_active(self, state:bool) -> None:
+    self.active = state
   
   def remove_enemies(self, enemy=None):
     if enemy is None:
@@ -233,6 +271,13 @@ class EnemyManager:
           # Checks for collision
           if enemy.mask.overlap(bullet.mask, (offset_x, offset_y)):
             bullets.remove(bullet)
-            self.remove_enemies(enemy)
-            self.player.update_score()
+            enemy.health -= self.player.damage
+            if enemy.health <= 0:
+              if enemy.enemy_type != 4:
+                self.remove_enemies(enemy)
+                self.player.update_score(1)
+              else:
+                self.remove_enemies(enemy)
+                self.player.update_score(4)
+                self.upgrades_menu_manager.set_upgrade_menu_active(True)
             break
