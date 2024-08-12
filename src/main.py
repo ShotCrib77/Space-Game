@@ -26,6 +26,12 @@ ENEMY_SHIP_IMAGE_SMALL = pg.image.load(os.path.join("assets", "enemies", "enemy_
 ENEMY_SHIP_IMAGE_TANK = pg.image.load(os.path.join("assets", "enemies", "enemy_ship_tank.png"))
 ENEMY_SHIP_IMAGE_BOSS = pg.image.load(os.path.join("assets", "enemies", "enemy_ship_boss.png"))
 
+UPGRADE_CARD_IMAGE_T1 = pg.image.load(os.path.join("assets", "upgrade_cards", "upgrade_card_t1.png")) # 200 x 281
+UPGRADE_CARD_IMAGE_T2 = pg.image.load(os.path.join("assets", "upgrade_cards", "upgrade_card_t2.png")) # 215 x 300
+UPGRADE_CARD_IMAGE_T3 = pg.image.load(os.path.join("assets", "upgrade_cards", "upgrade_card_t3.png")) # 222 x 300
+UPGRADE_CARD_IMAGE_T4 = pg.image.load(os.path.join("assets", "upgrade_cards", "upgrade_card_t4.png")) # 200 x 300
+UPGRADE_CARD_IMAGE_T5 = pg.image.load(os.path.join("assets", "upgrade_cards", "upgrade_card_t5.png")) # 188 x 300
+
 # Screen 
 pg.display.set_caption("Space Game")
 pg.display.set_icon(PLAYER_SHIP_ICON)
@@ -51,7 +57,7 @@ def main():
     clock = pg.time.Clock()
     last_enemy_time = pg.time.get_ticks()
     last_astroid_time = pg.time.get_ticks()
-    choose_enemy = [1, 2, 3]
+    choose_enemy = [1, 1, 1, 1, 1, 2, 2, 3] # 1 : Normal Enemy, 2: Small Enemy, 3: Tank Enemy 
     
     
     # Updates window
@@ -62,12 +68,13 @@ def main():
         player.draw_bullets()
         player.update_player()
         astroids_manager.manage_astroids()
-        
         if right_mouse_button_down and not upgrades_menu_manager.upgrade_menu_active and not game_loop_manager.game_over_active: # Laser mining beam has to be blited out before main_surface
             player.mining_laser(current_time)
             
         enemy_manager.draw_enemies()
-    
+
+        #main_surface.blit(UPGRADE_CARD_IMAGE_T5, (700, 190))
+        
         screen.blit(main_surface, (0, 0))
         if upgrades_menu_manager.upgrade_menu_active:
             game_loop_manager.draw_upgrades()
@@ -111,8 +118,6 @@ def main():
         
         if right_mouse_button_down and not upgrades_menu_manager.upgrade_menu_active and not left_mouse_button_down and not game_loop_manager.game_over_active: # Laser mining beam has to be blited out before main_surface
             astroids_manager.check_astroids_hit(current_time)
-            print(enemy_manager.active)
-            print(upgrades_menu_manager.score_for_next_level)
               
         enemy_manager.update_enemies()
         enemy_manager.check_bullet_hits(player.bullets)
@@ -130,7 +135,7 @@ def main():
             astroids_manager.spawn_astroid()
             last_astroid_time = current_time
         
-        if player.health == 0:
+        if player.health <= 0:
             game_loop_manager.set_game_over_active(True)
     
     pg.quit()
@@ -138,6 +143,3 @@ def main():
     
 if __name__ == "__main__":
     main()
-
-
-
