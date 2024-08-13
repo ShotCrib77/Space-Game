@@ -3,6 +3,7 @@ import pygame as pg
 from ship import EnemyManager
 from upgrades import UpgradeMenuManager
 from astroids import AstroidsManager
+from upgrades_cards import UpgradesMenu
 import os
 from pygame.locals import *
 
@@ -29,14 +30,14 @@ def surface_scale(surface, scale_factor): # Scales everyhting on the screen (1 b
 
 class GameLoopManager:
   
-  def __init__(self, screen:pg.display, main_surface:pg.Surface, upgrades_menu_manager: UpgradeMenuManager, enemy_manager: EnemyManager, astroids_manager:AstroidsManager) -> None:
+  def __init__(self, screen:pg.display, main_surface:pg.Surface, upgrades_menu_manager: UpgradeMenuManager, enemy_manager: EnemyManager, astroids_manager:AstroidsManager,  upgrades_menu:UpgradesMenu) -> None:
     self.screen = screen
     self.main_surface = main_surface
     self.upgrades_menu_manager = upgrades_menu_manager
     self.enemy_manager = enemy_manager
     self.astroids_manager = astroids_manager
     self.game_over_active = False
-
+    self.upgrades_menu = upgrades_menu
     self.game_over_render = game_end_font.render("Game Over", True, RED)
     self.game_over_text = self.game_over_render.get_rect()
     self.game_over_text.center = (WIDTH // 2, HEIGHT // 2)
@@ -50,7 +51,15 @@ class GameLoopManager:
     self.upgrades_menu_manager.draw_buttons()
     self.upgrades_menu_manager.draw_upgrade_menu()
     self.upgrades_menu_manager.draw_surface(self.screen, 100, 200)
-    
+  
+  def draw_upgrades2(self) -> None:
+    self.enemy_manager.remove_enemies()
+    self.astroids_manager.remove_astroids()
+    scaled_surface = surface_scale(self.main_surface, 0.35)
+    self.screen.blit(scaled_surface, (0, 0))
+    self.upgrades_menu.draw_menu()
+    #self.upgrades_menu_manager.draw_surface(self.screen, 100, 200)
+  
   def game_over(self):
     self.enemy_manager.remove_enemies()
     self.astroids_manager.remove_astroids()

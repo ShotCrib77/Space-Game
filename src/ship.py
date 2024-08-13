@@ -4,7 +4,7 @@ import os
 import random
 from pygame.locals import *
 import math
-
+from upgrades_cards import UpgradesMenu
 from upgrades import UpgradeMenuManager
 
 pg.font.init()
@@ -59,7 +59,7 @@ class Player(Ship):
     self.mask = pg.mask.from_surface(self.ship_img)
     self.bullets = []
     self.score = 0
-    self.damage = 1
+    self.damage = 10
     self.health = 10
     self.player_vel = player_vel
     self.surface = surface
@@ -199,11 +199,12 @@ class Enemy(Ship):
     self.y += self.enemy_vel_y
       
 class EnemyManager:
-  def __init__(self, player:Player, surface:pg.Surface, upgrades_menu_manager:UpgradeMenuManager):
+  def __init__(self, player:Player, surface:pg.Surface, upgrades_menu_manager:UpgradeMenuManager, upgrades_menu:UpgradesMenu):
     self.enemies = []
     self.player = player
     self.upgrades_menu_manager = upgrades_menu_manager
     self.surface = surface
+    self.upgrades_menu = upgrades_menu
     self.active = False
     self.level = 1  # Current game level or score/time factor
     self.enemy_configs = {
@@ -277,6 +278,7 @@ class EnemyManager:
                 self.remove_enemies(enemy)
                 self.player.update_score(1)
               else:
+                self.upgrades_menu.init_menu()
                 self.remove_enemies(enemy)
                 self.player.update_score(4)
                 self.upgrades_menu_manager.set_upgrade_menu_active(True)

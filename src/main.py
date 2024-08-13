@@ -3,6 +3,7 @@ from ship import Player, EnemyManager
 from upgrades import UpgradeMenuManager
 from astroids import AstroidsManager
 from gameloop import GameLoopManager
+from upgrades_cards import UpgradesMenu
 import pygame as pg
 from pygame.locals import *
 import os
@@ -50,9 +51,11 @@ def main():
     moving = False
     player = Player(SHIP_LOCATION[0], SHIP_LOCATION[1], main_surface, 2)
     upgrades_menu_manager = UpgradeMenuManager(player)
-    enemy_manager = EnemyManager(player, main_surface, upgrades_menu_manager)
+    upgrades_menu = UpgradesMenu(screen)
+    enemy_manager = EnemyManager(player, main_surface, upgrades_menu_manager, upgrades_menu)
     astroids_manager = AstroidsManager(main_surface, player, upgrades_menu_manager.upgrade_materials)
-    game_loop_manager = GameLoopManager(screen, main_surface, upgrades_menu_manager, enemy_manager, astroids_manager)
+    game_loop_manager = GameLoopManager(screen, main_surface, upgrades_menu_manager, enemy_manager, astroids_manager, upgrades_menu)
+
     upgrades_menu_manager.import_enemy_manager(enemy_manager)
     clock = pg.time.Clock()
     last_enemy_time = pg.time.get_ticks()
@@ -73,11 +76,9 @@ def main():
             
         enemy_manager.draw_enemies()
 
-        #main_surface.blit(UPGRADE_CARD_IMAGE_T5, (700, 190))
-        
         screen.blit(main_surface, (0, 0))
         if upgrades_menu_manager.upgrade_menu_active:
-            game_loop_manager.draw_upgrades()
+            game_loop_manager.draw_upgrades2()
         
         if player.health == 0:
             game_loop_manager.game_over()

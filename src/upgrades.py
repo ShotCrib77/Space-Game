@@ -68,7 +68,7 @@ class UpgradeMenuManager:
     self.player = player
     self.enemy_manager = None
     self.upgrade_menu_active = False
-    self.score_for_next_level = 3
+    self.score_for_next_level = 1
     self.times_healed = 0
     self.money = 0
     self.upgrade_materials = {"Metiorite Stone": 0, "Malachite": 0, "Blue Crystal": 0, "Magma Stone": 0}
