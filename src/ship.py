@@ -53,24 +53,130 @@ class Ship:
 class Player(Ship):
   def __init__(self, x:int, y:int, surface:pg.Surface, player_vel:int):
     super().__init__(x, y, surface)
+    self.surface = surface
     self.last_shot_time = 0
-    self.cooldown = 2500
     self.ship_img = PLAYER_SHIP
     self.mask = pg.mask.from_surface(self.ship_img)
     self.bullets = []
-    self.score = 0
-    self.damage = 10
-    self.health = 10
-    self.player_vel = player_vel
-    self.surface = surface
-    self.mining_power = 1
     self.mining_laser_beam_rect = pg.Rect((self.x + 115), (self.y - 605), 25, 650)
     self.mining_laser_beam_mask = pg.mask.from_surface(MINING_LASER_IMAGE_FRAME_1)
+    
+    self.score = 0
+    
+    # Player stats
+    self.player_vel = player_vel
+    
+    self.base_mining_laser_beam_cooldown = 500 # Lower values => Better
+    self.mining_laser_beam_cooldown_percent_mult = 1.0
+    self.mining_laser_beam_cooldown_expo_mult = 1.0
+    
+    self.base_laser_cooldown = 2500 # Lower values => Better
+    self.laser_cooldown_percent_mult = 1.0
+    self.laser_cooldown_expo_mult = 1.0
+    
+    self.base_damage = 10 # Higher values => Better
+    self.damage_percent_mult = 1.0
+    self.damage_expo_mult = 1.0
+    
+    self.base_xp_gain_rate = 1.0 # 1.0 = 100%  Higher values => Better
+    self.xp_gain_rate_percent_mult = 1.0
+    self.xp_gain_rate_expo_mult = 1.0
+    
     self.mining_laser_beam_cooldown = 500
+    self.laser_cooldown = 2500
+    self.damage = 10
+    self.xp_gain_rate = 1.0
+    self.health = 10
+    
+    self.stats = {
+      "Laser Damage": {
+        "value": self.base_damage,
+        "percent_mult": self.damage_percent_mult,
+        "expo_mult": self.damage_expo_mult
+      },
+      "Laser Cooldown Reduction": {
+        "value": self.base_laser_cooldown,
+        "percent_mult": self.laser_cooldown_percent_mult,
+        "expo_mult": self.laser_cooldown_expo_mult
+      },
+      "Mining Beam Speed": {
+        "value": self.base_mining_laser_beam_cooldown,
+        "percent_mult": self.mining_laser_beam_cooldown_percent_mult,
+        "expo_mult": self.mining_laser_beam_cooldown_expo_mult
+      },
+      "Xp Gain": {
+        "value": self.base_xp_gain_rate,
+        "percent_mult": self.xp_gain_rate_percent_mult,
+        "expo_mult": self.xp_gain_rate_expo_mult
+      },
+      "Health": {
+        "value": self.health,
+      }
+    }
+    
+  def update_player_stat(self, base, percent_multiplier, exponential_multiplier, stat_name=None) -> int|float:
+    if stat_name == None:
+      return int(base * percent_multiplier * exponential_multiplier)
+    elif stat_name in ["Mining Laser", "Laser Cooldown"]:
+      return int(base / (percent_multiplier * exponential_multiplier))
+    elif stat_name == "Xp Gain":
+      return float(base * percent_multiplier * exponential_multiplier)
+  
+  def update_player_stats(self):
+    print("Updating stats...")
+    
+    # Update the mining laser beam cooldown
+    base_value = self.stats["Mining Beam Speed"]["value"]
+    percent_mult = self.stats["Mining Beam Speed"]["percent_mult"]
+    expo_mult = self.stats["Mining Beam Speed"]["expo_mult"]
+    
+    self.mining_laser_beam_cooldown = self.update_player_stat(
+      base_value, 
+      percent_mult, 
+      expo_mult, 
+      stat_name="Mining Laser"
+    )
+
+    # Update the laser cooldown
+    base_value = self.stats["Laser Cooldown Reduction"]["value"]
+    percent_mult = self.stats["Laser Cooldown Reduction"]["percent_mult"]
+    expo_mult = self.stats["Laser Cooldown Reduction"]["expo_mult"]
+    
+    self.laser_cooldown = self.update_player_stat(
+      base_value, 
+      percent_mult, 
+      expo_mult, 
+      stat_name="Laser Cooldown"
+    )
+
+    # Update the damage
+    base_value = self.stats["Laser Damage"]["value"]
+    percent_mult = self.stats["Laser Damage"]["percent_mult"]
+    expo_mult = self.stats["Laser Damage"]["expo_mult"]
+    
+    self.damage = self.update_player_stat(
+      base_value, 
+      percent_mult, 
+      expo_mult
+    )
+
+    # Update the XP gain rate
+    base_value = self.stats["Xp Gain"]["value"]
+    percent_mult = self.stats["Xp Gain"]["percent_mult"]
+    expo_mult = self.stats["Xp Gain"]["expo_mult"]
+    
+    self.xp_gain_rate = self.update_player_stat(
+      base_value, 
+      percent_mult, 
+      expo_mult,
+      stat_name = "Xp Gain"
+    )
+    
+    print(f"Mining Laser {self.mining_laser_beam_cooldown}, Laser: {self.laser_cooldown}, Damage: {self.damage}, XP {self.xp_gain_rate}")
     
   def player_shoot(self, click_x, click_y):
     current_time = pg.time.get_ticks()
-    if (current_time - self.last_shot_time) >= self.cooldown:
+    if (current_time - self.last_shot_time) >= self.laser_cooldown:
       # Calculate relative positions
       shot_x = click_x - (self.x + 125)
       shot_y = click_y - (self.y + 25)
@@ -121,14 +227,14 @@ class Player(Ship):
     self.surface.blit(self.score_label, (10, 925))
     self.surface.blit(self.health_label, (650, 925))
   
-  def move(self, keys, upgrades_menu_manager, player, moving: bool, left_mouse_button_down: bool):
+  def move(self, keys, upgrades_menu, player, moving: bool, left_mouse_button_down: bool):
     moving=False
-    if keys[pg.K_a] and player.x - self.player_vel > 0 and not upgrades_menu_manager.upgrade_menu_active:
+    if keys[pg.K_a] and player.x - self.player_vel > 0 and not upgrades_menu.menu_active:
       player.x -= self.player_vel
       self.mining_laser_beam_rect[0] -= self.player_vel
       moving = True
       
-    elif keys[pg.K_d] and player.x + player.ship_img.get_width() + self.player_vel < WIDTH and not upgrades_menu_manager.upgrade_menu_active:
+    elif keys[pg.K_d] and player.x + player.ship_img.get_width() + self.player_vel < WIDTH and not upgrades_menu.menu_active:
       player.x += self.player_vel
       self.mining_laser_beam_rect[0] += self.player_vel
       moving = True
@@ -199,10 +305,9 @@ class Enemy(Ship):
     self.y += self.enemy_vel_y
       
 class EnemyManager:
-  def __init__(self, player:Player, surface:pg.Surface, upgrades_menu_manager:UpgradeMenuManager, upgrades_menu:UpgradesMenu):
+  def __init__(self, player:Player, surface:pg.Surface, upgrades_menu:UpgradesMenu):
     self.enemies = []
     self.player = player
-    self.upgrades_menu_manager = upgrades_menu_manager
     self.surface = surface
     self.upgrades_menu = upgrades_menu
     self.active = False
@@ -281,5 +386,5 @@ class EnemyManager:
                 self.upgrades_menu.init_menu()
                 self.remove_enemies(enemy)
                 self.player.update_score(4)
-                self.upgrades_menu_manager.set_upgrade_menu_active(True)
+                self.upgrades_menu.activate_upgrades_menu(True)
             break

@@ -68,13 +68,13 @@ class UpgradeMenuManager:
     self.player = player
     self.enemy_manager = None
     self.upgrade_menu_active = False
-    self.score_for_next_level = 1
+    self.score_for_next_level = 10
     self.times_healed = 0
     self.money = 0
     self.upgrade_materials = {"Metiorite Stone": 0, "Malachite": 0, "Blue Crystal": 0, "Magma Stone": 0}
     # Initialize buttons
     self.button_damage = Button((50, 72, 128, 92), "DAMAGE", 100, str(self.player.damage) + " -> " + str(self.player.damage + 1) , GREY, self.damage_button_action)
-    self.button_lasercd = Button((236, 72, 128, 92), "LASER CD", 100, str(self.player.cooldown) + " -> " + str(math.ceil((self.player.cooldown * 0.8))), GREY, self.lasercd_button_action)
+    self.button_lasercd = Button((236, 72, 128, 92), "LASER CD", 100, str(self.player.laser_cooldown) + " -> " + str(math.ceil((self.player.laser_cooldown * 0.8))), GREY, self.lasercd_button_action)
     self.button_heal = Button((422, 72, 128, 92), "HEAL", 100, "Times Heald: " + str(self.times_healed), GREY, self.heal_button_action)
     self.button_done = Button((236, 320, 128, 92), "Done", None, None, BLACK, self.done_button_action)
     self.button_sell_t1 = Button((130, 275, 25, 25), None, None, None, BLACK, self.create_sell_material_action("Metiorite Stone"))
@@ -160,15 +160,15 @@ class UpgradeMenuManager:
     [button.is_right_clicked(event) for button in self.buttons]
         
   def done_button_action(self) -> None:
-    self.score_for_next_level = math.ceil(self.score_for_next_level * 3)
+    self.score_for_next_level = math.ceil(self.score_for_next_level ** 1.5)
     self.set_upgrade_menu_active(False)
     self.enemy_manager.boss_active(False)
     
   def lasercd_button_action(self):
     if self.money >= self.button_lasercd.price:
       self.money -= self.button_lasercd.price
-      self.player.cooldown = math.ceil(self.player.cooldown * 0.8)
-      self.button_lasercd.upgrade_effect = str(self.player.cooldown) + " -> " + str(math.ceil((self.player.cooldown * 0.8)))
+      self.player.laser_cooldown = math.ceil(self.player.laser_cooldown * 0.8)
+      self.button_lasercd.upgrade_effect = str(self.player.laser_cooldown) + " -> " + str(math.ceil((self.player.laser_cooldown * 0.8)))
       self.button_lasercd.price = math.ceil(self.button_lasercd.price * 1.25) 
       
   def damage_button_action(self) -> None:
