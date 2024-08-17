@@ -186,6 +186,10 @@ class UpgradesMenu:
     self.upgrade_cards_surface.fill((0, 0, 0, 0))
     self.upgrade_cards_manager = UpgradeCardsManager(self.upgrade_cards_surface, player)
     self.menu_active = False
+    self.score_for_next_level = 10
+    
+  def update_score_for_next_level(self):
+    self.score_for_next_level = math.ceil(self.score_for_next_level ** 1.15)
     
   def draw_menu(self) -> None:
     self.upgrade_cards_surface.fill((0, 0, 0, 0))
@@ -202,6 +206,7 @@ class UpgradesMenu:
     self.menu_active = state
   
   def done_upgrading(self):
+    self.update_score_for_next_level()
     self.activate_upgrades_menu(False)
     self.enemy_manager.boss_active(False)
   

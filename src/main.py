@@ -74,9 +74,10 @@ def main():
         astroids_manager.manage_astroids()
         if right_mouse_button_down and not upgrades_menu.menu_active and not game_loop_manager.game_over_active: # Laser mining beam has to be blited out before main_surface
             player.mining_laser(current_time)
-            print(upgrades_menu.upgrade_cards_manager.cards)
+            print(upgrades_menu.score_for_next_level)
             
         enemy_manager.draw_enemies()
+        
 
         screen.blit(main_surface, (0, 0))
         if upgrades_menu.menu_active:
@@ -127,7 +128,7 @@ def main():
         enemy_manager.check_bullet_hits(player.bullets)
         
         if current_time - last_enemy_time >= enemy_spawn_timer and not upgrades_menu.menu_active and not game_loop_manager.game_over_active:
-            if player.score >= upgrades_menu_manager.score_for_next_level and not enemy_manager.active:
+            if player.score >= upgrades_menu.score_for_next_level and not enemy_manager.active:
                 enemy_manager.create_enemy(4)
                 enemy_manager.boss_active(True)
             else:
