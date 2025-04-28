@@ -71,7 +71,7 @@ class UpgradeMenuManager:
     self.score_for_next_level = 3
     self.times_healed = 0
     self.money = 0
-    self.upgrade_materials = {"Metiorite Stone": 0, "Malachite": 0, "Blue Crystal": 0, "Magma Stone": 0}
+    self.upgrade_materials = {"Metiorite Stone": 0, "Malachite": 0, "Blue Crystal": 0, "Magma Stone": 10}
     # Initialize buttons
     self.button_damage = Button((50, 72, 128, 92), "DAMAGE", 100, str(self.player.damage) + " -> " + str(self.player.damage + 1) , GREY, self.damage_button_action)
     self.button_lasercd = Button((236, 72, 128, 92), "LASER CD", 100, str(self.player.cooldown) + " -> " + str(math.ceil((self.player.cooldown * 0.8))), GREY, self.lasercd_button_action)
