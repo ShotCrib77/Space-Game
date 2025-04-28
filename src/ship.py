@@ -70,7 +70,7 @@ class Player(Ship):
     self.mining_laser_beam_cooldown_percent_mult = 1.0
     self.mining_laser_beam_cooldown_expo_mult = 1.0
     
-    self.base_laser_cooldown = 2500 # Lower values => Better
+    self.base_laser_cooldown = 1000 # Lower values => Better
     self.laser_cooldown_percent_mult = 1.0
     self.laser_cooldown_expo_mult = 1.0
     
@@ -83,8 +83,8 @@ class Player(Ship):
     self.xp_gain_rate_expo_mult = 1.0
     
     self.mining_laser_beam_cooldown = 500
-    self.laser_cooldown = 2500
-    self.damage = 10
+    self.laser_cooldown = 1000
+    self.damage = 1
     self.xp_gain_rate = 1.0
     self.health = 10
     
